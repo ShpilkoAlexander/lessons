@@ -34,5 +34,5 @@ int main() {
     SearchServer server;
     // 2. Вызовите функцию GetStopWordsSize, передав ей объект server
     // 3. Выведите результат, возвращёный функцией GetStopWordsSize в cout
-    cout << GetStopWordsSize(server) << endl;
+    cout << GetStopWordsSize(server);
 }
