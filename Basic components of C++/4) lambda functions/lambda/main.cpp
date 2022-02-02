@@ -169,7 +169,7 @@ int CountAndAddNewDogs(const vector<string>& new_dogs,
     int new_dogs_count = 0;
     new_dogs_count = count_if(new_dogs.begin(), new_dogs.end(),
         [&max_amount, &shelter] (const string& dog){
-        if(shelter.at(dog) < max_amount.at(dog)){
+        if(shelter[dog] < max_amount.at(dog)){
             ++shelter[dog];
             return true;
         }
