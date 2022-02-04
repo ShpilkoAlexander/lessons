@@ -496,10 +496,11 @@ private:
         vector<Document> matched_documents;
         map<int, int> document_to_relevance;
         for(const string& p_word : query_words.plus_word){
-            document_to_relevance[]//////////////
+            if (word_to_documents_.find(p_word) != word_to_documents_.end()){
+                set<int> as = word_to_documents_[p_word];
+                for(int document_id : word_to_documents_[p_word])
 
-                    //////////////////
-                    ////////////
+            }
         }
 
         for (const auto& document : documents_) {
@@ -552,4 +553,5 @@ int main() {
              << "relevance = "s << relevance << " }"s << endl;
     }
 }
+
 
