@@ -492,44 +492,59 @@ private:
         return query_words;
     }
 
+    set<int> DocumentsIdWithWord(const string&  word) const{
+        return word_to_documents_.at(word);
+    }
+
     vector<Document> FindAllDocuments(const Query& query_words) const {
         vector<Document> matched_documents;
         map<int, int> document_to_relevance;
+
+        // adding documents by plus words
         for(const string& p_word : query_words.plus_word){
             if (word_to_documents_.find(p_word) != word_to_documents_.end()){
-                set<int> as = word_to_documents_[p_word];
-                for(int document_id : word_to_documents_[p_word])
-
+                for(const int& document_id : DocumentsIdWithWord(p_word)){
+                    ++document_to_relevance[document_id];
+                }
             }
         }
 
-        for (const auto& document : documents_) {
-            const int relevance = MatchDocument(document, query_words);
-            if (relevance > 0) {
-                matched_documents.push_back({document.id, relevance});
+        // deleting documents by minus words
+        for(const string& m_word : query_words.minus_word){
+            if (word_to_documents_.find(m_word) != word_to_documents_.end()){
+                for(const int& document_id : DocumentsIdWithWord(m_word)){
+                    document_to_relevance.erase(document_id);
+                }
             }
         }
+
+
+        for(const auto& [id_document, relevance]: document_to_relevance ){
+            matched_documents.push_back({id_document, relevance});
+        }
+
+
         return matched_documents;
     }
 
-    static int MatchDocument(const DocumentContent& content, const Query& query_words) {
-        if (query_words.plus_word.empty()) {
-            return 0;
-        }
-        set<string> matched_words;
-        for (const string& word : content.words) {
-            if (query_words.minus_word.count(word)){
-                return 0;
-            }
-            if (matched_words.count(word) != 0) {
-                continue;
-            }
-            if (query_words.plus_word.count(word) != 0) {
-                matched_words.insert(word);
-            }
-        }
-        return static_cast<int>(matched_words.size());
-    }
+//    static int MatchDocument(const DocumentContent& content, const Query& query_words) {
+//        if (query_words.plus_word.empty()) {
+//            return 0;
+//        }
+//        set<string> matched_words;
+//        for (const string& word : content.words) {
+//            if (query_words.minus_word.count(word)){
+//                return 0;
+//            }
+//            if (matched_words.count(word) != 0) {
+//                continue;
+//            }
+//            if (query_words.plus_word.count(word) != 0) {
+//                matched_words.insert(word);
+//            }
+//        }
+//        return static_cast<int>(matched_words.size());
+//    }
 };
 
 SearchServer CreateSearchServer() {
