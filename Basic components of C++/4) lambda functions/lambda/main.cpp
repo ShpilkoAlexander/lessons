@@ -435,13 +435,6 @@ public:
             word_to_documents_freqs_[word][document_id] += 1.0 / words.size();
         }
         ++document_count;
-////        for(auto[word, id_rel] : word_to_documents_freqs_){
-////            cout << word << ": ";
-////            for(auto[id, rel] : id_rel){
-////                cout << "<" << id << ", " << rel << "> ";
-//            }
-////        cout << endl;
-//        }
     }
 
     vector<Document> FindTopDocuments(const string& raw_query) const {
@@ -515,8 +508,7 @@ private:
                 const int document_with_word_count = DocumentsIdWithWord(p_word).size();
                 for(const auto& [document_id, TF] : DocumentsIdWithWord(p_word)){
                     double IDF = 0.0;
-                    IDF = log((document_count + 0.0) / document_with_word_count);
-                    //cout << p_word << " " << IDF << endl;
+                    IDF = log((document_count * 1.0) / document_with_word_count);
                     document_to_relevance[document_id] += IDF * TF;
                 }
             }
