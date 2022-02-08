@@ -61,7 +61,7 @@ public:
         }
     }
 
-    void AddDocument(int document_id, const string& document,DocumentStatus status, const vector<int>& ratings) {
+    void AddDocument(int document_id, const string& document,DocumentStatus status , const vector<int>& ratings) {
         const vector<string> words = SplitIntoWordsNoStop(document);
         const double inv_word_count = 1.0 / words.size();
         for (const string& word : words) {
@@ -71,7 +71,7 @@ public:
         document_specification_.emplace(document_id, specifications);
     }
 
-    vector<Document> FindTopDocuments(const string& raw_query, const DocumentStatus& status) const {
+    vector<Document> FindTopDocuments(const string& raw_query, DocumentStatus status= DocumentStatus::ACTUAL) const {
         const Query query = ParseQuery(raw_query);
         auto matched_documents = FindAllDocuments(query, status);
 
