@@ -1,0 +1,26 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/xander/C++/Yandex/Projects/lesson/Nymeric types/7) Enumerated types/enumerated_types/main.cpp
+algorithm
+-
+cmath
+-
+iostream
+-
+map
+-
+set
+-
+string
+-
+utility
+-
+vector
+-
+
