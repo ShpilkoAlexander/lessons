@@ -36,21 +36,29 @@ public:
       tuple<TasksInfo, TasksInfo> PerformPersonTasks(
               const string& person, int task_count){
           TasksInfo updates_status;
-          for(const auto& [status, task] : persons_tasks[person]){
-              switch (status) {
-              case TaskStatus::NEW:
+          for(const auto& [status, t_count] : persons_tasks[person]){
+              if(status == TaskStatus::DONE) {break;}
 
-                  break;
+              updates_status[status] = UpdateTask(task_count, t_count);
 
-              }
-
-
+             // if(t_count >= task_count) {break;}
           }
 
       }
 
 private:
       map<string, TasksInfo> persons_tasks;
+
+
+      int UpdateTask (int& task_count, int t_count){
+          if (task_count > t_count){
+              task_count -= t_count;
+              return 0;
+          }
+          else{
+              return t_count - task_count;
+          }
+      }
 
 
 };
