@@ -1,69 +1,45 @@
+#include <algorithm>
 #include <iostream>
 #include <vector>
-#include <set>
-#include <map>
 
 using namespace std;
 
+struct Animal {
+    string name;
+    int age;
+    double weight;
+};
 
-
-template <typename Key, typename Value>
-ostream& operator<<(ostream& out, const pair<Key, Value> container){
-    out << "(" << container.first << ", " << container.second << ")";
-    return out;
+template <typename Container, typename KeyMapper>
+void SortBy(Container& container, KeyMapper key_mapper) {
+    // теперь можно сортировать контейнер
+        // с компаратором key_mapper(lhs) < key_mapper(rhs)
+    sort(container.begin(), container.end(), [key_mapper](const auto& lhs, const auto &rhs)
+    {
+        return key_mapper(lhs) < key_mapper(rhs);
+    });
 }
 
-template <typename Collection>
-ostream& Print(ostream& out, const Collection container){
-    bool isFirst = true;
-    for(const auto& element : container){
-        if(!isFirst){
-            out << ", ";
-        }
-        out << element;
-        isFirst = false;
+void PrintNames(const vector<Animal>& animals) {
+    for (const Animal& animal : animals) {
+        cout << animal.name << ' ';
     }
-    return out;
-}
-
-template <typename Element>
-ostream& operator<<(ostream& out, const vector<Element> container){
-    out << "[";
-    Print(out, container);
-    out << "]";
-
-    return out;
-}
-
-template <typename Element>
-ostream& operator<<(ostream& out, const set<Element> container){
-    out << "{";
-    Print(out, container);
-    out << "}";
-
-    return out;
-}
-
-template <typename Key, typename Value>
-ostream& operator<<(ostream& out, const map<Key, Value> container){
-    out << "<";
-    Print(out, container);
-    out << ">";
-    return out;
+    cout << endl;
 }
 
 int main() {
-    const set<string> cats = {"Мурка"s, "Белка"s, "Георгий"s, "Рюрик"s};
-    cout << cats << endl;
-
-    const vector<int> ages = {10, 5, 2, 12};
-    cout << ages << endl;
-
-    const map<string, int> cat_ages = {
-        {"Мурка"s, 10},
-        {"Белка"s, 5},
-        {"Георгий"s, 2},
-        {"Рюрик"s, 12}
+    vector<Animal> animals = {
+        {"Мурка"s,   10, 5},
+        {"Белка"s,   5,  1.5},
+        {"Георгий"s, 2,  4.5},
+        {"Рюрик"s,   12, 3.1},
     };
-    cout << cat_ages << endl;
+
+    PrintNames(animals);
+
+    SortBy(animals, [](const Animal& animal) { return animal.name; });
+    PrintNames(animals);
+
+    SortBy(animals, [](const Animal& animal) { return -animal.weight; });
+    PrintNames(animals);
 }
