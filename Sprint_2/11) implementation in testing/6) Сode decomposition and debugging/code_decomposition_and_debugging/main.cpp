@@ -36,6 +36,7 @@ istream& operator>>(istream& input, Query& q) {
     if(type == "NEW_BUS"s){
         q.type = QueryType::NewBus;
         q.stops = {};
+        q.bus = "";
         input >> q.bus;
         string stop;
         int count_stops = 0;
@@ -44,12 +45,15 @@ istream& operator>>(istream& input, Query& q) {
             input >> stop;
             q.stops.push_back(stop);
         }
+
     }
     else if (type == "BUSES_FOR_STOP"s) {
+        q.stop = "";
         q.type = QueryType::BusesForStop;
         input >> q.stop;
     }
     else if (type == "STOPS_FOR_BUS"s) {
+        q.bus = "";
         q.type = QueryType::StopsForBus;
         input >> q.bus;
     }
@@ -75,6 +79,7 @@ ostream& operator<<(ostream& output, const BusesForStopResponse& r) {
             if(isFirst){
                 output << bus;
                 isFirst = false;
+                continue;
             }
             output << " " << bus;
         }
@@ -166,7 +171,7 @@ public:
         all_buses.all_buses = stops_to_buses;
         return all_buses;
     }
-//private:
+private:
     map<string, vector<string>> stops_to_buses, buses_to_stops;
 };
 
@@ -292,13 +297,4 @@ int main() {
                 break;
         }
     }
-    cout << endl;
-//    for(const auto& [bus, stops] : bm.stops_to_buses){
-//        cout << "bus " << bus <<": ";
-//        cout << stops;
-//    }
-//    for(const auto& [stop, buses] : bm.buses_to_stops){
-//        cout << "stop " << stop <<": ";
-//        cout << buses;
-//    }
 }
