@@ -1,49 +1,61 @@
 #include <algorithm>
 #include <iostream>
 #include <numeric>
-#include <sstream>
 #include <vector>
 
 using namespace std;
 
-// функция, записывающая элементы диапазона в строку
 template <typename It>
-string PrintRangeToString(It range_begin, It range_end) {
-      // удобный тип ostringstream -> https://ru.cppreference.com/w/cpp/io/basic_ostringstream
-    ostringstream out;
+void PrintRange(It range_begin, It range_end) {
     for (auto it = range_begin; it != range_end; ++it) {
-        out << *it << " "s;
+        cout << *it << " "s;
     }
-    out << endl;
-      // получаем доступ к строке с помощью метода str для ostringstream
-    return out.str();
+    cout << endl;
 }
 
-template <typename It>
-vector<string> GetPermutations (It range_begin, It range_end){
-    sort(range_begin, range_end, [] (auto lhs, auto rhs) {
-        return lhs > rhs;
-    });
-
-    vector<string> permutations;
-    permutations.push_back(PrintRangeToString(range_begin, range_end));
-    while(prev_permutation(range_begin, range_end)){
-        permutations.push_back(PrintRangeToString(range_begin, range_end));
+template <typename RandomIt>
+void MergeSort(RandomIt range_begin, RandomIt range_end) {
+    // 1. Если диапазон содержит меньше 2 элементов, выходим из функции
+    int range_length = range_end - range_begin;
+    if (range_length < 2) {
+        return;
     }
 
-    return permutations;
+    // 2. Создаем вектор, содержащий все элементы текущего диапазона
+    vector<typename RandomIt::value_type> elements(range_begin, range_end);
+
+    // 3. Разбиваем вектор на две равные части
+    auto mid = elements.begin() + range_length / 2;
+
+    // 4. Вызываем функцию MergeSort от каждой половины вектора
+    MergeSort(elements.begin(), mid);
+    MergeSort(mid, elements.end());
+
+    // 5. С помощью алгоритма merge сливаем отсортированные половины
+    // в исходный диапазон
+    // merge -> http://ru.cppreference.com/w/cpp/algorithm/merge
+    merge(elements.begin(), mid, mid, elements.end(), range_begin);
 }
 
 int main() {
-    vector<int> permutation(3);
+    vector<int> test_vector(10);
+
     // iota             -> http://ru.cppreference.com/w/cpp/algorithm/iota
     // Заполняет диапазон последовательно возрастающими значениями
-    iota(permutation.begin(), permutation.end(), 1);
+    iota(test_vector.begin(), test_vector.end(), 1);
 
-    auto result = GetPermutations(permutation.begin(), permutation.end());
-    for (const auto& s : result) {
-        cout << s;
-    }
+    // random_shuffle   -> https://ru.cppreference.com/w/cpp/algorithm/random_shuffle
+    // Перемешивает элементы в случайном порядке
+    random_shuffle(test_vector.begin(), test_vector.end());
+
+    // Выводим вектор до сортировки
+    PrintRange(test_vector.begin(), test_vector.end());
+
+    // Сортируем вектор с помощью сортировки слиянием
+    MergeSort(test_vector.begin(), test_vector.end());
+
+    // Выводим результат
+    PrintRange(test_vector.begin(), test_vector.end());
+
     return 0;
 }
-
