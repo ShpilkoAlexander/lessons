@@ -1,6 +1,7 @@
 #pragma once
 #include <cassert>
 #include <stdexcept>
+#include "simple_vector.h"
 
 // У функции, объявленной со спецификатором inline, может быть несколько
 // идентичных определений в разных единицах трансляции.
@@ -115,3 +116,203 @@ inline void Test1() {
         }
     }
 }
+
+inline void Test2() {
+    // PushBack
+    {
+        SimpleVector<int> v(1);
+        v.PushBack(42);
+        assert(v.GetSize() == 2);
+        assert(v.GetCapacity() >= v.GetSize());
+        assert(v[0] == 0);
+        assert(v[1] == 42);
+    }
+
+    // Если хватает места, PushBack не увеличивает Capacity
+    {
+        SimpleVector<int> v(2);
+        v.Resize(1);
+        const size_t old_capacity = v.GetCapacity();
+        v.PushBack(123);
+        assert(v.GetSize() == 2);
+        assert(v.GetCapacity() == old_capacity);
+    }
+
+    // PopBack
+    {
+        SimpleVector<int> v{0, 1, 2, 3};
+        const size_t old_capacity = v.GetCapacity();
+        const auto old_begin = v.begin();
+        v.PopBack();
+        assert(v.GetCapacity() == old_capacity);
+        assert(v.begin() == old_begin);
+        assert((v == SimpleVector<int>{0, 1, 2}));
+    }
+
+    // Конструктор копирования
+    {
+        SimpleVector<int> numbers{1, 2};
+        auto numbers_copy(numbers);
+        assert(&numbers_copy[0] != &numbers[0]);
+        assert(numbers_copy.GetSize() == numbers.GetSize());
+        for (size_t i = 0; i < numbers.GetSize(); ++i) {
+            assert(numbers_copy[i] == numbers[i]);
+            assert(&numbers_copy[i] != &numbers[i]);
+        }
+    }
+
+    // Сравнение
+    {
+        assert((SimpleVector{1, 2, 3} == SimpleVector{1, 2, 3}));
+        assert((SimpleVector{1, 2, 3} != SimpleVector{1, 2, 2}));
+
+        assert((SimpleVector{1, 2, 3} < SimpleVector{1, 2, 3, 1}));
+        assert((SimpleVector{1, 2, 3} > SimpleVector{1, 2, 2, 1}));
+
+        assert((SimpleVector{1, 2, 3} >= SimpleVector{1, 2, 3}));
+        assert((SimpleVector{1, 2, 4} >= SimpleVector{1, 2, 3}));
+        assert((SimpleVector{1, 2, 3} <= SimpleVector{1, 2, 3}));
+        assert((SimpleVector{1, 2, 3} <= SimpleVector{1, 2, 4}));
+    }
+
+    // Обмен значений векторов
+    {
+        SimpleVector<int> v1{42, 666};
+        SimpleVector<int> v2;
+        v2.PushBack(0);
+        v2.PushBack(1);
+        v2.PushBack(2);
+        const int* const begin1 = &v1[0];
+        const int* const begin2 = &v2[0];
+
+        const size_t capacity1 = v1.GetCapacity();
+        const size_t capacity2 = v2.GetCapacity();
+
+        const size_t size1 = v1.GetSize();
+        const size_t size2 = v2.GetSize();
+
+        static_assert(noexcept(v1.swap(v2)));
+        v1.swap(v2);
+        assert(&v2[0] == begin1);
+        assert(&v1[0] == begin2);
+        assert(v1.GetSize() == size2);
+        assert(v2.GetSize() == size1);
+        assert(v1.GetCapacity() == capacity2);
+        assert(v2.GetCapacity() == capacity1);
+    }
+
+    // Присваивание
+    {
+        SimpleVector<int> src_vector{1, 2, 3, 4};
+        SimpleVector<int> dst_vector{1, 2, 3, 4, 5, 6};
+        dst_vector = src_vector;
+        assert(dst_vector == src_vector);
+    }
+
+    // Вставка элементов
+    {
+        SimpleVector<int> v{1, 2, 3, 4};
+        v.Insert(v.begin() + 2, 42);
+        assert((v == SimpleVector<int>{1, 2, 42, 3, 4}));
+    }
+
+    // Удаление элементов
+    {
+        SimpleVector<int> v{1, 2, 3, 4};
+        v.Erase(v.cbegin() + 2);
+        assert((v == SimpleVector<int>{1, 2, 4}));
+    }
+}
+
+inline void Test3() {
+    typedef int type_t;
+    SimpleVector<type_t> v;
+    assert(v.Insert(v.end(), -10) == v.end() - 1);
+    assert(v.GetSize() == 1u);
+    assert(v.GetCapacity() >= v.GetSize());
+    assert(v[0] == -10);
+    assert(v.Insert(v.end(), -11) == v.end() - 1);
+    assert(v.GetSize() == 2u);
+    assert(v.GetCapacity() >= v.GetSize());
+    assert(v[0] == -10);
+    assert(v[1] == -11);
+    const size_t old_capacity = v.GetCapacity();
+    v.Clear();
+    assert(v.Insert(v.end(), -1) == v.end() - 1);
+    assert(v[0] == -1);
+    assert(v.GetSize() == 1u);
+    assert(v.GetCapacity() == old_capacity);
+}
+
+void Test4(){
+    typedef int type_t;
+    constexpr size_t SIZE = 4u;
+    //constexpr type_t VALUE = 5;
+    std::initializer_list<type_t> LIST = {1, 2, 3, 4};
+    size_t LIST_SIZE = LIST.size();
+    SimpleVector<type_t> v(LIST);
+
+    v.PushBack(-10);
+    assert(v.GetSize() == LIST_SIZE + 1u);
+    assert(v.GetCapacity() >= v.GetSize());
+    auto iter = LIST.begin();
+    assert(std::all_of(v.begin(), v.end() - 1u, [&iter](const type_t& item) {
+        return item == *iter++;
+    }));
+    assert(v[LIST_SIZE] == -10);
+
+    v.PushBack(-11);
+    assert(v.GetSize() == LIST_SIZE + 2u);
+    assert(v.GetCapacity() >= v.GetSize());
+    iter = LIST.begin();
+    assert(std::all_of(v.begin(), v.end() - 2u, [&iter](const type_t& item) {
+        return item == *iter++;
+    }));
+    assert(v[SIZE] == -10);
+    assert(v[SIZE+1u] == -11);
+
+    const size_t old_capacity = v.GetCapacity();
+    v.Clear();
+    v.PushBack(-1);
+    assert(v[0] == -1);
+    assert(v.GetSize() == 1u);
+    assert(v.GetCapacity() == old_capacity);
+}
+
+void TestReserveConstructor() {
+    std::cout << "TestReserveConstructor"s << std::endl;
+    SimpleVector<int> v(Reserve(5));
+    assert(v.GetCapacity() == 5);
+    assert(v.IsEmpty());
+    std::cout << "Done!"s << std::endl;
+}
+
+void TestReserveMethod() {
+    std::cout << "TestReserveMethod"s << std::endl;
+    SimpleVector<int> v;
+    // зарезервируем 5 мест в векторе
+    v.Reserve(5);
+    assert(v.GetCapacity() == 5);
+    assert(v.IsEmpty());
+
+    // попытаемся уменьшить capacity до 1
+    v.Reserve(1);
+    // capacity должно остаться прежним
+    assert(v.GetCapacity() == 5);
+    // поместим 10 элементов в вектор
+    for (int i = 0; i < 10; ++i) {
+        v.PushBack(i);
+    }
+    assert(v.GetSize() == 10);
+    // увеличим capacity до 100
+    v.Reserve(100);
+    // проверим, что размер не поменялся
+    assert(v.GetSize() == 10);
+    assert(v.GetCapacity() == 100);
+    // проверим, что элементы на месте
+    for (int i = 0; i < 10; ++i) {
+        assert(v[i] == i);
+    }
+    std::cout << "Done!"s << std::endl;
+}
+
