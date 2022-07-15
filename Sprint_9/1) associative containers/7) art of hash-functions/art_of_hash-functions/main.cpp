@@ -1,47 +1,51 @@
 #include <iostream>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
-#include <sstream>
 
 using namespace std;
 
-template <typename Hash>
-int FindCollisions(const Hash& hasher, istream& text) {
-    string word;
-    unordered_map<size_t, unordered_set<string>> words_hash;
-
-    while (text >> word) {
-        words_hash[move(hasher(word))].insert(move(word));
-    }
-
-    size_t collisions = 0;
-    for (const auto& [word_hash, words] : words_hash) {
-        collisions += words.size() - 1;
-    }
-
-    return collisions;
-}
-
-// Это плохой хешер. Его можно использовать для тестирования.
-// Подумайте, в чём его недостаток
-struct DummyHash {
-    size_t operator()(const string&) const {
-        return 42;
-    }
+struct Circle {
+    double x;
+    double y;
+    double r;
 };
 
+struct CircleHasher {
+    size_t operator() (const Circle& circle) const {
+        size_t h_x = d_hasher_(circle.x);
+        size_t h_y = d_hasher_(circle.y);
+        size_t h_r = d_hasher_(circle.r);
+
+        return h_x + h_y * 37 + h_r * (37 * 37);
+    }
+
+private:
+    hash<double> d_hasher_;
+};
+
+struct Dumbbell {
+    Circle circle1;
+    Circle circle2;
+    string text;
+};
+
+struct DumbbellHash {
+    size_t operator() (const Dumbbell dumbbell) const {
+
+        size_t h_c1 = c_hasher_(dumbbell.circle1);
+        size_t h_c2 = c_hasher_(dumbbell.circle2);
+        size_t h_r = s_hasher_(dumbbell.text);
+
+        return h_c1 * (37 * 37 * 37 * 37) + h_c2 * 37 + h_r;
+    }
+
+private:
+    hash<string> s_hasher_;
+    CircleHasher c_hasher_;
+
+};
 
 int main() {
-    DummyHash dummy_hash;
-    hash<string> good_hash;
-
-    {
-        istringstream stream("I love C++"s);
-        cout << FindCollisions(dummy_hash, stream) << endl;
-    }
-    {
-        istringstream stream("I love C++"s);
-        cout << FindCollisions(good_hash, stream) << endl;
-    }
+    DumbbellHash hash;
+    Dumbbell dumbbell{{10, 11.5, 2.3}, {3.14, 15, -8}, "abc"s};
+    cout << "Dumbbell hash "s << hash(dumbbell);
 }
